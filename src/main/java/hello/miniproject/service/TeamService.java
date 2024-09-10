@@ -253,6 +253,40 @@ public class TeamService {
 //        return PostSearchDateOfWorkTimeResponseDto.success(list);
 //    }
 
+    // 특정 직원의 날짜별 근무시간 조회 V2
+    // 연차를 사용했다면 usingDayOff : true
+    public ResponseEntity<? super PostSearchDateOfWorkTimeResponseDtoV2> searchMonthV2(PostSearchDateOfWorkTimeRequestDtoV2 dto) {
+        EmployeeEntity employee = new EmployeeEntity();
+        List<AttendanceEntity> list = new ArrayList<>();
+
+        try {
+            // 직원 조회
+            Optional<EmployeeEntity> searchMember = employeeRepository.findById(dto.getEmployeeId());
+            // 직원 없을 경우 - 퇴사 or 비직원
+            if (!searchMember.isPresent()){
+                return PostSearchDateOfWorkTimeResponseDtoV2.noExistedUser();
+            }else {
+                // 직원 있을 경우
+                employee = searchMember.get();
+            }
+            list = attendanceRepository.findByEmployeeIdAndDateStartingWith(employee.getEmployeeId(), dto.getRequestMonth());
+            // 직원의 출퇴근 기록이 없을 경우
+            if (list == null || list.isEmpty()){
+                return PostSearchDateOfWorkTimeResponseDtoV2.invalid("출퇴든 기록이 없습니다");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        // 직원의 출퇴근 기록이 있다면
+        // 데이터 가공
+        // 200반환
+        return PostSearchDateOfWorkTimeResponseDtoV2.success(list);
+    }
+
+
+
+
     // 연차 조회 기능 - 직원 id로 남은 연차 확인
     public ResponseEntity<? super GetSearchAnnualLeaveResponseDto> annualLeave(Long employeeId){
         EmployeeEntity target = new EmployeeEntity();
@@ -314,6 +348,9 @@ public class TeamService {
             employee.setAnnualLeaves(employee.getAnnualLeaves() - requestAnnual.size());
             employeeRepository.save(employee);
 
+            // 출퇴근 기록부에
+
+
         }catch (Exception e){
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -323,9 +360,5 @@ public class TeamService {
     }
 
 
-
-
-    // 특정 직원의 날짜별 근무시간 조회 V2
-    // 연차를 사용했다면 usingDayOff : true
 
 }

@@ -1,14 +1,16 @@
 package hello.miniproject.controller;
 
+import hello.miniproject.dto.object.HolidayItemList;
 import hello.miniproject.dto.request.*;
 import hello.miniproject.dto.response.*;
-import hello.miniproject.scheduler.AnnualLeaveScheduler;
 import hello.miniproject.service.TeamService;
-import lombok.Getter;
+import hello.miniproject.service.WebClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
 
     private final TeamService teamService;
+    private final WebClientService webClientService;
     // 팀 조회 기능
     @GetMapping("/team")
     public ResponseEntity<? super GetSearchTeamResponseDto> searchTeam(){
@@ -76,8 +79,8 @@ public class EmployeeController {
     // 매개변수 직원 ID, 날짜 (2024-01)
     @PostMapping("/searchMonth")
     public ResponseEntity<? super PostSearchDateOfWorkTimeResponseDtoV2> searchMonth(@RequestBody PostSearchDateOfWorkTimeRequestDtoV2 dto){
-        teamService.searchMonthV2(dto);
-        return null;
+        ResponseEntity<? super PostSearchDateOfWorkTimeResponseDtoV2> result = teamService.searchMonthV2(dto);
+        return result;
     }
 
     //연차 조회 기능
@@ -92,6 +95,19 @@ public class EmployeeController {
     public ResponseEntity<? super PostAnnualLeaveResponseDto> requestAnnualLeave(@RequestBody PostAnnualLeaveRequestDto dto){
         ResponseEntity<? super PostAnnualLeaveResponseDto> result = teamService.requestAnnualLeave(dto);
         return result;
+    }
+
+    // 공휴일 데이터 받아오기
+    @GetMapping("/test/{year}")
+    public ResponseEntity<? super GetHolidayResponseDto> test(@PathVariable("year")Integer year){
+        ResponseEntity<? super GetHolidayResponseDto> result = webClientService.setData(year);
+        return result;
+    }
+
+    // 초과 근무 계산 API
+    @GetMapping("/overtime/{month}")
+    public ResponseEntity<? super GetOvertimeResponseDto> overtime(@PathVariable("month")Integer month){
+        teamService.overtime(month)
     }
 
 

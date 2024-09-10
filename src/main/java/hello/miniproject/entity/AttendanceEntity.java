@@ -5,41 +5,59 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+@Slf4j
 @Entity(name = "attendance")
-@IdClass(AttendancePk.class)
 @Getter
 @Setter
 public class AttendanceEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long attendanceId;
     private Long employeeId;
-    @Id
+    private String  date;
     private String enterTime;
-
     private String outTime;
+    private Boolean usingDatOff = false;
 
 
     public AttendanceEntity() {
     }
-
+    // 출근기록 생성자
     public AttendanceEntity(Long id) {
-        Date now = Date.from(Instant.now());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String date = simpleDateFormat.format(now);
+
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String formatTime = currentTime.format(formatter);
+
 
         this.employeeId = id;
-        this.enterTime = date;
+        this.date = String.valueOf(LocalDate.now());
+        this.enterTime = formatTime;
     }
-    public void setOutTime(){
-        Date now = Date.from(Instant.now());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String date = simpleDateFormat.format(now);
 
-        this.outTime = date;
+
+    public AttendanceEntity(Long employeeId, LocalDate now, boolean isTrue) {
+        this.employeeId = employeeId;
+        this.date = String.valueOf(now);
+        this.usingDatOff = isTrue;
+    }
+
+    public void setOutTime(){
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String formatTime = currentTime.format(formatter);
+
+        this.outTime = formatTime;
     }
 }
